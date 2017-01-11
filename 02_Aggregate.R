@@ -6,7 +6,7 @@
 
 load("data/201609-citibike-tripdata-dist.Rda")
 
-# Calcul des heures de départ
+# Calcul des heures de d?part
 nydata$starttime <- as.character(nydata$starttime)
 nydata$HourStart <- as.numeric(substr(t(as.data.frame(strsplit(nydata$starttime,' ')))[,2],1,2))
 table(nydata$HourStart)
@@ -29,11 +29,15 @@ nydata <- tbl_df(nydata)
 # test <- nydata %>% mutate(Speed = Distance * 3600 / tripduration)
 # summary(test$Speed)
 # investigate max speed = 1167 km/h !!!
+hist(nydata$Distance)
+table(nydata$Distance > 25)
+# Consider that Distance > 25km/h is supicious ! => -16 calculations
+nydata$Distance[nydata$Distance > 25] <- NA
 
 startdata <- nydata %>% 
   rename(station.id = start.station.id, station.name = start.station.name, station.latitude = start.station.latitude, station.longitude = start.station.longitude) %>%
   mutate(Speed = Distance * 3600 / tripduration) %>%
-  group_by(station.id, station.name, start.station.latitude, start.station.longitude) %>%
+  group_by(station.id, station.name, station.latitude, station.longitude) %>%
   summarise(meanduration_out = mean(tripduration),
             meanspeed_out = mean(Speed, na.rm = TRUE),
             trips_out = n(),
@@ -66,7 +70,15 @@ startdata <- nydata %>%
   )
 glimpse(startdata)
 
-save(startdata,file="startdata.Rda")
+
+table()
+
+hist(startdata$meanspeed_out)
+table(startdata$meanspeed_out > 40)
+startdata$meanspeed_out[startdata$meanspeed_out > 40] <- NA
+hist(startdata$meanspeed_out)
+
+save(startdata,file="data/startdata.Rda")
 
 
 
@@ -105,12 +117,17 @@ enddata <- nydata %>%
             h23_in = sum(HourStop ==23)
   )
 glimpse(enddata)
+hist(enddata$meanspeed_in)
+table(enddata$meanspeed_in > 30)
+enddata$meanspeed_in[enddata$meanspeed_in > 30] <- NA
+hist(enddata$meanspeed_in)
 
-save(enddata,file="enddata.Rda")
+
+save(enddata,file="data/enddata.Rda")
 
 # Join everything
 
 alldata <- full_join(startdata, enddata)
+alldata$station.name <- as.factor(alldata$station.name)
 
-save(alldata,file="alldata.Rda")
-
+save(alldata,file="data/alldata.Rda")
