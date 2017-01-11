@@ -8,21 +8,30 @@
 #
 
 library(shiny)
+library(ggmap)
 
 load("../data/alldata.Rda")
 
-# Define server logic required to draw a histogram
 shinyServer(function(input, output) {
-   
-  output$distPlot <- renderPlot({
+
+  output$carte <- renderLeaflet({
+    mlat  <- mean(alldata$station.latitude)
+    mlong <- mean(alldata$station.longitude)
     
-    # generate bins based on input$bins from ui.R
-    x    <- alldata$meanspeed_in[!is.na(alldata$meanspeed_in)]
-    bins <- seq(min(x), max(x), length.out = input$bins + 1)
     
-    # draw the histogram with the specified number of bins
-    hist(x, breaks = bins, col = 'darkgray', border = 'white', main = "Incoming speed for Citybike Travels")
+    #ColorPal <- colorNumeric(scales::seq_gradient_pal(low = "red", high = "green"),
+    #                         domain = st$thresholded_available_bikes)
+    m <- leaflet(data = alldata) %>%
+      addTiles() %>%
+      addCircles(~ station.longitude, ~ station.latitude, popup = ~ sprintf("<b> Mean Speed: %s</b>",as.character(meanspeed_in)),
+                 radius = ~ 0.5*sqrt(trips_out),
+#                 color = ~ ColorPal(thresholded_available_bikes),
+                 stroke = TRUE, fillOpacity = 0.75) %>%
+#      addCircles(data = geo(), ~ lon, ~ lat, color = "black", radius = 20) %>%
+      setView(lng = mlong, lat = mlat, zoom = input$zoom)
     
+    m
   })
   
+
 })
