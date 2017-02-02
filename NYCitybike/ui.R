@@ -19,24 +19,16 @@ shinyUI(fluidPage(
   # Sidebar with a slider input for number of bins 
   sidebarLayout(
     sidebarPanel(
-#       sliderInput("bins",
-#                   "Number of bins:",
-#                   min = 1,
-#                   max = 50,
-#                   value = 30),
        sliderInput("zoom",
                    "Zoom:",
                    min = 1,
                    max = 25,
-                   value = 13)
+                   value = 12)
     ),
-    
-    # Show a plot of the generated distribution
     mainPanel(
-#      textOutput("texte"),
+      textOutput("texte"),
       leafletOutput("carte", height = 600)
 #      plotOutput("distance"),
-#      textOutput("proche")
     )
   )
 ))

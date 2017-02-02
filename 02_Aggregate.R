@@ -6,7 +6,7 @@
 
 load("data/201609-citibike-tripdata-dist.Rda")
 
-# Calcul des heures de d?part
+# Calcul des heures de depart
 nydata$starttime <- as.character(nydata$starttime)
 nydata$HourStart <- as.numeric(substr(t(as.data.frame(strsplit(nydata$starttime,' ')))[,2],1,2))
 table(nydata$HourStart)
@@ -18,6 +18,7 @@ hist(nydata$HourStart)
 hist(nydata$HourStop)
 
 save(nydata, file="data/201609-citibike-tripdata-dist-hour.Rda")
+load("data/201609-citibike-tripdata-dist-hour.Rda")
 
 
 library(dplyr)
@@ -126,6 +127,10 @@ hist(enddata$meanspeed_in)
 save(enddata,file="data/enddata.Rda")
 
 # Join everything
+
+load("data/startdata.Rda")
+load("data/enddata.Rda")
+
 
 alldata <- full_join(startdata, enddata)
 alldata$station.name <- as.factor(alldata$station.name)

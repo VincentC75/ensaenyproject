@@ -9,23 +9,33 @@
 
 library(shiny)
 library(ggmap)
+library(dplyr)
 
+setwd("C:/Users/Vincent/Dropbox/LECEPE/ensaenyproject/NYCitybike")
+load("../data/alldatacluster2.Rda")
 load("../data/alldata.Rda")
+#dataj <- full_join(alldata, alldatacluster)
+dataj <- left_join(alldatacluster, alldata)
+table(dataj$clust)
+#alldata$cluster <- dataj$clust
 
 shinyServer(function(input, output) {
 
   output$carte <- renderLeaflet({
-    mlat  <- mean(alldata$station.latitude)
-    mlong <- mean(alldata$station.longitude)
-    
+    mlat  <- mean(dataj$station.latitude)
+    mlong <- mean(dataj$station.longitude)
+#    ColorPal <- colorNumeric(scales::seq_gradient_pal(low = "red", high = "green"), domain = alldata$cluster)
+    #ColorPal <- colorNumeric(scales::seq_gradient_pal(low = "red", high = "green"), domain = alldata$cluster)
+    ColorPal <- colorFactor(topo.colors(8), dataj$clust)    
     
     #ColorPal <- colorNumeric(scales::seq_gradient_pal(low = "red", high = "green"),
     #                         domain = st$thresholded_available_bikes)
-    m <- leaflet(data = alldata) %>%
+    m <- leaflet(data = dataj) %>%
       addTiles() %>%
       addCircles(~ station.longitude, ~ station.latitude, popup = ~ sprintf("<b> Mean Speed: %s</b>",as.character(meanspeed_in)),
                  radius = ~ 0.5*sqrt(trips_out),
-#                 color = ~ ColorPal(thresholded_available_bikes),
+                 #color = ~ rainbow(cluster),
+                 color = ~ ColorPal(clust),
                  stroke = TRUE, fillOpacity = 0.75) %>%
 #      addCircles(data = geo(), ~ lon, ~ lat, color = "black", radius = 20) %>%
       setView(lng = mlong, lat = mlat, zoom = input$zoom)

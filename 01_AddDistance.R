@@ -47,7 +47,7 @@ nydata[nydata$start.station.latitude == nydata$end.station.latitude & nydata$end
 table(nydata$Distance, useNA="always")
 table(nydata$Loop)
 
-# Parcours de l'ensemble des données
+# Parcours de l'ensemble des donn?es
 
 for (recnum in 1:nrow(nydata)) {
   if (is.na(nydata[recnum,"Distance"])) {
@@ -64,10 +64,10 @@ for (recnum in 1:nrow(nydata)) {
               nydata$end.station.latitude == nydata[recnum,"end.station.latitude"] &              
               nydata$start.station.longitude == nydata[recnum,"start.station.longitude"] &
               nydata$end.station.longitude == nydata[recnum,"end.station.longitude"]), "Distance" ] <- route$distance
-      nydata[(nydata$end.station.latitude == nydata[recnum,"start.station.latitude"] &
-                nydata$start.station.latitude == nydata[recnum,"end.station.latitude"] &              
-                nydata$end.station.longitude == nydata[recnum,"start.station.longitude"] &
-                nydata$start.station.longitude == nydata[recnum,"end.station.longitude"]), "Distance" ] <- route$distance
+#      nydata[(nydata$end.station.latitude == nydata[recnum,"start.station.latitude"] &
+#                nydata$start.station.latitude == nydata[recnum,"end.station.latitude"] &              
+#                nydata$end.station.longitude == nydata[recnum,"start.station.longitude"] &
+#                nydata$start.station.longitude == nydata[recnum,"end.station.longitude"]), "Distance" ] <- route$distance
     }
   }
 }
@@ -84,6 +84,6 @@ load("data/201609-citibike-tripdata-dist.Rda")
 # TODO 
 # Idem avec apply ?
 # Idem avec data.table ?
-# Réutilisation des distances déjà calculees sur un nouveau fichier
+# R?utilisation des distances d?j? calculees sur un nouveau fichier
 # Investigation des quelques distances que osrmRoute ne veut pas calculer
 
