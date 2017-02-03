@@ -136,3 +136,4 @@ alldata <- full_join(startdata, enddata)
 alldata$station.name <- as.factor(alldata$station.name)
 
 save(alldata,file="data/alldata.Rda")
+

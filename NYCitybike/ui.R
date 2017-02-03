@@ -9,6 +9,10 @@
 
 library(shiny)
 library(leaflet)
+library(shinydashboard)
+
+
+
 
 # Define UI for application that draws a histogram
 shinyUI(fluidPage(
@@ -28,7 +32,6 @@ shinyUI(fluidPage(
     mainPanel(
       textOutput("texte"),
       leafletOutput("carte", height = 600)
-#      plotOutput("distance"),
     )
   )
 ))

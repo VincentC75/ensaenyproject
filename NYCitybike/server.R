@@ -10,6 +10,7 @@
 library(shiny)
 library(ggmap)
 library(dplyr)
+library(shinydashboard)
 
 setwd("C:/Users/Vincent/Dropbox/LECEPE/ensaenyproject/NYCitybike")
 load("../data/alldatacluster2.Rda")
