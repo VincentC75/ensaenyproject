@@ -112,7 +112,7 @@ server <- function(input, output) {
   })
   
   observe({
-    print(input$Cluster)
+#    print(input$Cluster)
     if (!is.null(input$Cluster)) {
     data_disp <- dataj[dataj$clust %in% input$Cluster,]
 

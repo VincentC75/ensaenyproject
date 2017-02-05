@@ -1,28 +1,44 @@
 #
-# Ajour d'une colonne distance aux donnees Velib NY
+# Ajout d'une colonne distance aux donnees Velib NY
 #
+
+# Ajout de la distance entre les stations
+library(osrm)
+
+testsrc <- c("Allen St & Stanton St", -73.98911, 40.72205)
+testdst <- c("Washington Ave & Park Ave", -73.96751, 40.69610)
+routetest <- osrmRoute(src=testsrc, dst = testdst, sp = TRUE)
+routetest2 <- osrmRoute(src=testdst, dst = testsrc, sp = TRUE)
+
+# La distance aller et retour est différent en raison des sens uniques
+routetest$distance
+routetest2$distance
+rm(routetest, routetest2)
+
+# Affichage de la route aller
+route <- osrmRoute(src = testsrc, dst = testdst)
+route2 <- osrmRoute(src = testdst, dst = testsrc)
+
+library(ggmap)
+maptest <- get_map(location = c(mean(c(max(route$lon),min(route$lon))), mean(c(max(route$lat),min(route$lat)))), zoom=14)
+ggmap(maptest) + 
+  geom_point(data = route[1,], aes(x=lon, y=lat), col = "red", size = 5) +
+  geom_point(data = route[nrow(route),], aes(x=lon, y=lat), col = "magenta", size = 5) +
+  geom_point(data = route, aes(x=lon, y = lat), col = "blue", size = 3, alpha = 0.5) + 
+  geom_path(data = route, aes(x=lon, y = lat), col = "blue", size = 1, alpha=0.5) + 
+  geom_point(data = route2, aes(x=lon, y = lat), col = "green", size = 3, alpha = 0.5) + 
+  geom_path(data = route2, aes(x=lon, y = lat), col = "green", size = 1, alpha=0.5) 
+
+rm(maptest, route, route2, testsrc, testdst)
+
 
 nydata <- read.csv("data/201609-citibike-tripdata.csv")
 
-#
-# Ajout de la distance entre les stations
-#
-
-#
-# Step 1 : Test sur peu de donnees
-# 
+# Test sur peu de donnees
 testdata <- head(nydata, 15)
 testdata$Distance <- NA
 
-library(osrm)
-
-routetest <- osrmRoute(src=c("Allen St & Stanton St", -73.98911, 40.72205),
-                      dst = c("Washington Ave & Park Ave", -73.96751, 40.69610),
-                      sp = TRUE)
-routetest$distance
-
 # Approche procedurale avec une boucle for
-
 for (recnum in 1:nrow(testdata)) {
   route <- osrmRoute(src = testdata[recnum,c("start.station.name", "start.station.longitude", "start.station.latitude")],
                      dst = testdata[recnum,c("end.station.name", "end.station.longitude", "end.station.latitude")],
@@ -30,12 +46,9 @@ for (recnum in 1:nrow(testdata)) {
   print(paste(recnum,route$distance))
   testdata[recnum,"Distance"] <- route$distance
 }
-
-# Sauvegarde du resultat
-save(testdata,file="testdata.Rda")
-
-# Test de rechargement
-load("testdata.Rda")
+# save(testdata,file="testdata.Rda")
+# load("testdata.Rda")
+rm(testdata, recnum, route)
 
 # Execution sur l'ensemble des donnees
 nydata$Distance <- NA
@@ -47,7 +60,7 @@ nydata[nydata$start.station.latitude == nydata$end.station.latitude & nydata$end
 table(nydata$Distance, useNA="always")
 table(nydata$Loop)
 
-# Parcours de l'ensemble des donn?es
+# Parcours de l'ensemble des donnees
 
 for (recnum in 1:nrow(nydata)) {
   if (is.na(nydata[recnum,"Distance"])) {
@@ -64,10 +77,6 @@ for (recnum in 1:nrow(nydata)) {
               nydata$end.station.latitude == nydata[recnum,"end.station.latitude"] &              
               nydata$start.station.longitude == nydata[recnum,"start.station.longitude"] &
               nydata$end.station.longitude == nydata[recnum,"end.station.longitude"]), "Distance" ] <- route$distance
-#      nydata[(nydata$end.station.latitude == nydata[recnum,"start.station.latitude"] &
-#                nydata$start.station.latitude == nydata[recnum,"end.station.latitude"] &              
-#                nydata$end.station.longitude == nydata[recnum,"start.station.longitude"] &
-#                nydata$start.station.longitude == nydata[recnum,"end.station.longitude"]), "Distance" ] <- route$distance
     }
   }
 }
