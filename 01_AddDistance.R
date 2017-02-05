@@ -87,8 +87,60 @@ table(nydata$Distance >0, useNA="always")
 #save(nydata,file="nydata2.Rda")
 #load("nydata2.Rda")
 
-#save(nydata,file="201609-citibike-tripdata-dist.Rda")
+#save(nydata,file="data/201609-citibike-tripdata-dist.Rda")
 load("data/201609-citibike-tripdata-dist.Rda")
+
+# Dictionnaire des distances connues
+library(dplyr)
+dist_dict <- nydata %>%
+  select(start.station.id, end.station.id, Distance) %>%
+  filter(start.station.id != end.station.id) %>%
+  group_by(start.station.id, end.station.id) %>%
+  unique()
+
+# Calcul sur le mois d'octobre 2016
+nydata_201610 <- read.csv("data/201610-citibike-tripdata.csv")
+names(nydata_201610) <- tolower(names(nydata_201610)) # Il y a des majuscules dans le fichier d'octobre
+nydata_201610 <- left_join(nydata_201610, dist_dict) # on charge les distance deja connues
+table(nydata_201610$Distance>0, useNA="always")
+# Si arrivee = depart alors distance = 0 et loop = 1
+nydata_201610[nydata_201610$start.station.latitude == nydata_201610$end.station.latitude & nydata_201610$end.station.longitude == nydata_201610$end.station.longitude,"Distance"] <- 0
+nydata_201610[nydata_201610$start.station.latitude == nydata_201610$end.station.latitude & nydata_201610$end.station.longitude == nydata_201610$end.station.longitude,"Loop"] <- 1
+table(nydata_201610$Distance>0, useNA="always")
+table(nydata_201610$Loop)
+
+nydata <- nydata_201610
+# Parcours de l'ensemble des donnees
+
+for (recnum in 1:nrow(nydata)) {
+  if (is.na(nydata[recnum,"Distance"])) {
+    route <- osrmRoute(src = nydata[recnum,c("start.station.name", "start.station.longitude", "start.station.latitude")],
+                       dst = nydata[recnum,c("end.station.name", "end.station.longitude", "end.station.latitude")],
+                       sp = TRUE)
+    if (is.null(route)) {
+      print("An error occured in osrmRoute call, skipping")
+    }
+    else {
+      print(paste(recnum,route$distance))
+      # On met a jour tous les enregistrements concernant ces deux stations avec la distance calculee
+      nydata[(nydata$start.station.latitude == nydata[recnum,"start.station.latitude"] &
+                nydata$end.station.latitude == nydata[recnum,"end.station.latitude"] &              
+                nydata$start.station.longitude == nydata[recnum,"start.station.longitude"] &
+                nydata$end.station.longitude == nydata[recnum,"end.station.longitude"]), "Distance" ] <- route$distance
+    }
+  }
+}
+
+# stats octobre
+table(nydata$Distance >0, useNA="always") # 30 NA : osrmRoute renvoie "Error : Impossible route between points"
+nydata_201610 <- nydata[!is.na(nydata$Distance),]
+save(nydata,file="data/201610-citibike-tripdata-dist.Rda")
+#load("data/201610-citibike-tripdata-dist.Rda")
+
+
+
+
+
 
 # TODO 
 # Idem avec apply ?
