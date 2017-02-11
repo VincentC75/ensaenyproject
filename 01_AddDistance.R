@@ -154,11 +154,6 @@ hist(nydata$HourStop)
 save(nydata,file="data/201610-citibike-tripdata-dist.Rda")
 #load("data/201610-citibike-tripdata-dist.Rda")
 
-
-
-
-
-
 # TODO 
 # Idem avec apply ?
 # Idem avec data.table ?
