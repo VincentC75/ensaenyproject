@@ -46,8 +46,6 @@ for (recnum in 1:nrow(testdata)) {
   print(paste(recnum,route$distance))
   testdata[recnum,"Distance"] <- route$distance
 }
-# save(testdata,file="testdata.Rda")
-# load("testdata.Rda")
 rm(testdata, recnum, route)
 
 # Execution sur l'ensemble des donnees
