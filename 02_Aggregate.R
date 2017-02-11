@@ -2,44 +2,20 @@
 # Aggregation des donnees Velib NY
 #
 
+library(dplyr)
+
 # Chargement des donnees traitees a l'etape 1
 
-load("data/201609-citibike-tripdata-dist.Rda")
+#load("data/201609-citibike-tripdata-dist.Rda")
+load("data/201610-citibike-tripdata-dist.Rda")
 
-# Calcul des heures de depart
-nydata$starttime <- as.character(nydata$starttime)
-nydata$HourStart <- as.numeric(substr(t(as.data.frame(strsplit(nydata$starttime,' ')))[,2],1,2))
-table(nydata$HourStart)
-nydata$stoptime <- as.character(nydata$stoptime)
-nydata$HourStop <- as.numeric(substr(t(as.data.frame(strsplit(nydata$stoptime,' ')))[,2],1,2))
-table(nydata$HourStop)
-
-hist(nydata$HourStart)
-hist(nydata$HourStop)
-
-save(nydata, file="data/201609-citibike-tripdata-dist-hour.Rda")
-load("data/201609-citibike-tripdata-dist-hour.Rda")
-
-
-library(dplyr)
-nydata <- tbl_df(nydata)
-#nydata
-#class(nydata)
-
-# Add speed
-# test <- nydata %>% mutate(Speed = Distance * 3600 / tripduration)
-# summary(test$Speed)
-# investigate max speed = 1167 km/h !!!
-hist(nydata$Distance)
-table(nydata$Distance > 25)
-# Consider that Distance > 25km/h is supicious ! => -16 calculations
-nydata$Distance[nydata$Distance > 25] <- NA
+#nydata <- tbl_df(nydata)
 
 startdata <- nydata %>% 
   rename(station.id = start.station.id, station.name = start.station.name, station.latitude = start.station.latitude, station.longitude = start.station.longitude) %>%
-  mutate(Speed = Distance * 3600 / tripduration) %>%
+  mutate(Speed = Distance * 3600 / trip.duration) %>%
   group_by(station.id, station.name, station.latitude, station.longitude) %>%
-  summarise(meanduration_out = mean(tripduration),
+  summarise(meanduration_out = mean(trip.duration),
             meanspeed_out = mean(Speed, na.rm = TRUE),
             trips_out = n(),
             percent_male_out = 100 * sum(gender == 1) / sum(gender > 0),
@@ -71,23 +47,17 @@ startdata <- nydata %>%
   )
 glimpse(startdata)
 
-
-table()
-
+# TODO : check extreme speeds
 hist(startdata$meanspeed_out)
-table(startdata$meanspeed_out > 40)
-startdata$meanspeed_out[startdata$meanspeed_out > 40] <- NA
+table(startdata$meanspeed_out > 50)
+startdata$meanspeed_out[startdata$meanspeed_out > 50] <- NA # Controle de cohérencehist(startdata$meanspeed_out)
 hist(startdata$meanspeed_out)
-
-save(startdata,file="data/startdata.Rda")
-
-
 
 enddata <- nydata %>% 
   rename(station.id = end.station.id, station.name = end.station.name, station.latitude = end.station.latitude, station.longitude = end.station.longitude) %>%
-  mutate(Speed = Distance * 3600 / tripduration) %>%
+  mutate(Speed = Distance * 3600 / trip.duration) %>%
   group_by(station.id, station.name, station.latitude, station.longitude) %>%
-  summarise(meanduration_in = mean(tripduration),
+  summarise(meanduration_in = mean(trip.duration),
             meanspeed_in = mean(Speed, na.rm = TRUE),
             trips_in = n(),
             percent_male_in = 100 * sum(gender == 1) / sum(gender > 0),
@@ -119,21 +89,15 @@ enddata <- nydata %>%
   )
 glimpse(enddata)
 hist(enddata$meanspeed_in)
-table(enddata$meanspeed_in > 30)
-enddata$meanspeed_in[enddata$meanspeed_in > 30] <- NA
+table(enddata$meanspeed_in > 50)
+enddata$meanspeed_in[enddata$meanspeed_in > 50] <- NA # Controle de cohérencehist(enddata$meanspeed_in)
 hist(enddata$meanspeed_in)
 
-
-save(enddata,file="data/enddata.Rda")
-
 # Join everything
-
-load("data/startdata.Rda")
-load("data/enddata.Rda")
-
-
 alldata <- full_join(startdata, enddata)
+rm(startdata, enddata)
 alldata$station.name <- as.factor(alldata$station.name)
 
-save(alldata,file="data/alldata.Rda")
-
+#save(alldata,file="data/201609-alldata.Rda")
+save(alldata,file="data/201610-alldata.Rda")
+rm(alldata, nydata)

@@ -92,6 +92,16 @@ table(nydata$HourStop)
 hist(nydata$HourStart)
 hist(nydata$HourStop)
 
+# Correction des noms de colonnes pour compatibilité avec fichier octobre
+nynames <- names(nydata)
+nynames[1] <- "trip.duration"
+nynames[2] <- "start.time"
+nynames[3] <- "stop.time"
+nynames[12] <- "bike.id"
+nynames[13] <- "user.type"
+names(nydata) <- nynames
+rm(nynames)
+
 save(nydata,file="data/201609-citibike-tripdata-dist.Rda")
 #load("data/201609-citibike-tripdata-dist.Rda")
 
