@@ -84,11 +84,18 @@ for (recnum in 1:nrow(nydata)) {
 # stats
 table(nydata$Distance >0, useNA="always")
 
-#save(nydata,file="nydata2.Rda")
-#load("nydata2.Rda")
+# Calcul des heures de depart
+nydata$starttime <- as.character(nydata$starttime)
+nydata$HourStart <- as.numeric(substr(t(as.data.frame(strsplit(nydata$starttime,' ')))[,2],1,2))
+table(nydata$HourStart)
+nydata$stoptime <- as.character(nydata$stoptime)
+nydata$HourStop <- as.numeric(substr(t(as.data.frame(strsplit(nydata$stoptime,' ')))[,2],1,2))
+table(nydata$HourStop)
+hist(nydata$HourStart)
+hist(nydata$HourStop)
 
-#save(nydata,file="data/201609-citibike-tripdata-dist.Rda")
-load("data/201609-citibike-tripdata-dist.Rda")
+save(nydata,file="data/201609-citibike-tripdata-dist.Rda")
+#load("data/201609-citibike-tripdata-dist.Rda")
 
 # Dictionnaire des distances connues
 library(dplyr)
@@ -134,6 +141,18 @@ for (recnum in 1:nrow(nydata)) {
 # stats octobre
 table(nydata$Distance >0, useNA="always") # 30 NA : osrmRoute renvoie "Error : Impossible route between points"
 nydata_201610 <- nydata[!is.na(nydata$Distance),]
+
+# Calcul des heures de depart
+nydata$start.time <- as.character(nydata$start.time)
+nydata$HourStart <- as.numeric(substr(t(as.data.frame(strsplit(nydata$start.time,' ')))[,2],1,2))
+table(nydata$HourStart)
+nydata$stop.time <- as.character(nydata$stop.time)
+nydata$HourStop <- as.numeric(substr(t(as.data.frame(strsplit(nydata$stop.time,' ')))[,2],1,2))
+table(nydata$HourStop)
+hist(nydata$HourStart)
+hist(nydata$HourStop)
+
+
 save(nydata,file="data/201610-citibike-tripdata-dist.Rda")
 #load("data/201610-citibike-tripdata-dist.Rda")
 
