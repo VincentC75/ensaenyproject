@@ -6,12 +6,13 @@ library(dplyr)
 library(rAmCharts)
 
 # Chargement des donnees
-setwd("C:/Users/Vincent/Dropbox/LECEPE/ensaenyproject")
-load("data/alldatacluster2.Rda")
-load("data/alldata.Rda")
-load("data/statcluster.Rda")
+setwd("C:/Users/Vincent/Dropbox/LECEPE/nyproject/ensaenyproject")
+load("data/201609-alldatacluster.Rda")
+load("data/201609-alldata.Rda")
+load("data/201609-statcluster.Rda")
 dataj <- left_join(alldatacluster, alldata)
 table(dataj$clust)
+rm(alldata, alldatacluster)
 
 mycolors <- c("red", "blue", "green", "magenta", "orange")
 
