@@ -30,14 +30,14 @@ ui <- dashboardPage(
       # First tab content
       tabItem(tabName = "dashboard",
               fluidRow(
-                column(width = 3, 
-                       box(
-                           title = "Zoom",
-                           status = "primary",
-                           width = 12,
-                           solidHeader = TRUE,
-                           collapsible = TRUE,
-                           sliderInput("zoom", "", min = 1, max = 18, value = 12)),
+                column(width = 2, 
+#                       box(
+#                           title = "Zoom",
+#                           status = "primary",
+#                           width = 12,
+#                           solidHeader = TRUE,
+#                           collapsible = TRUE,
+#                           sliderInput("zoom", "", min = 1, max = 18, value = 12)),
                        box(
                            title = "Cluster",
                            status = "primary",
@@ -50,7 +50,7 @@ ui <- dashboardPage(
                                               selected = 1:5
                            ))
                 ),
-                column(width = 9, leafletOutput("carte", height = 600))
+                column(width = 10, leafletOutput("carte", height = 600))
               )
       ),
       
@@ -66,7 +66,7 @@ ui <- dashboardPage(
                          collapsible = TRUE,
                          selectInput(inputId = "Compare",
                                             label = "",
-                                            choices = c("Age moyen des départs" = 1,"Age moyen des arrivées" =2, "Vitesse moyenne des départs" =3, "Vitesse moyenne des arrivées" = 4, "Age moyen" = 5),
+                                            choices = c("Age moyen des départs" = 1,"Age moyen des arrivées" =2, "Vitesse moyenne des départs" =3, "Vitesse moyenne des arrivées" = 4, "Age moyen" = 5, "Hommes / Femmes (Nb trajets)" = 6, "Hommes / Femmes (%)" = 7),
                                             selected = 1
                                     ))
                 )
@@ -92,8 +92,11 @@ server <- function(input, output) {
       amBoxplot(meanspeed_in ~ clust, data= dataj, col = mycolors, main = "Vitesse moyen pour les arrivées")
     } else if (input$Compare == 5) {
       amBarplot(x = "clust", y = "mean_age", data = statcluster, labelRotation = -45, main = "Age Moyen", show_values = TRUE) 
+    } else if (input$Compare == 6) {
+      amBarplot(x = "clust", y = c("trips_men", "trips_women"), data = statcluster, stack_type = "regular", groups_color = c("#87cefa", "pink"))    
+    } else if (input$Compare == 7) {
+      amBarplot(x = "clust", y = c("percent_men", "percent_women"), data = statcluster, stack_type = "regular", groups_color = c("#87cefa", "pink"))    
     }
-    
   })
   
   output$carte <- renderLeaflet({
@@ -108,7 +111,7 @@ server <- function(input, output) {
                  radius = ~ 0.5*sqrt(trips_out),
                  color = ~ ColorPal(clust),
                  stroke = TRUE, fillOpacity = 0.75)  %>%
-      setView(lng = mlong, lat = mlat, zoom = input$zoom)
+      setView(lng = mlong, lat = mlat, zoom = 12)
     m
   })
   
@@ -129,7 +132,7 @@ server <- function(input, output) {
                  color = ~ ColorPal(clust),
                  stroke = TRUE #,fillOpacity = 0.75
                  )  %>%
-      setView(lng = mlong, lat = mlat, zoom = input$zoom)
+      setView(lng = mlong, lat = mlat, zoom = 12)
     } else {
       leafletProxy("carte") %>% clearShapes()
         }

@@ -52,7 +52,7 @@ nydata <- left_join(nydata,idclust)
 #save(nydata,file="data/201609-nydata.Rda")
 
 statcluster <- nydata %>%
-               select(birth.year, clust, Distance, HourStart, HourStop) %>%
+               select(birth.year, clust, Distance, HourStart, HourStop, gender) %>%
                group_by(clust) %>%
                summarise(mean_age = round(mean(2017 - birth.year,na.rm = TRUE),digits=2),
                          mean_distance = round(mean(Distance,na.rm = TRUE),digits=2),
@@ -80,7 +80,11 @@ statcluster <- nydata %>%
                          h20_out = sum(HourStart ==20),
                          h21_out = sum(HourStart ==21),
                          h22_out = sum(HourStart ==22),
-                         h23_out = sum(HourStart ==23)
+                         h23_out = sum(HourStart ==23),
+                         trips_men = sum(gender == 1),
+                         trips_women = sum(gender == 2),
+                         percent_men = round(100 * trips_men / (trips_men + trips_women), digits = 2),
+                         percent_women = round(100 * trips_women / (trips_men + trips_women), digits = 2)
                )
 
 
@@ -91,3 +95,6 @@ save(statcluster,file="data/201609-statcluster.Rda")
 
 amBarplot(x = "clust", y = "mean_age", data = statcluster, labelRotation = -45)
 
+# Répartition par sexe.
+amBarplot(x = "clust", y = c("trips_men", "trips_women"), data = statcluster, stack_type = "regular", groups_color = c("#87cefa", "pink"))
+amBarplot(x = "clust", y = c("percent_men", "percent_women"), data = statcluster, stack_type = "regular", groups_color = c("#87cefa", "pink"))
