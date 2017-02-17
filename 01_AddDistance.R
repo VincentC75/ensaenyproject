@@ -29,6 +29,8 @@ ggmap(maptest) +
   geom_point(data = route2, aes(x=lon, y = lat), col = "green", size = 3, alpha = 0.5) + 
   geom_path(data = route2, aes(x=lon, y = lat), col = "green", size = 1, alpha=0.5) 
 
+# Sauvegarde pour utilisation hors-ligne
+save(route, route2,maptest,file="data/AllerRetour.Rda")
 rm(maptest, route, route2, testsrc, testdst)
 
 
