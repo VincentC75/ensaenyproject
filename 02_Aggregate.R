@@ -6,14 +6,15 @@ library(dplyr)
 
 # Chargement des donnees traitees a l'etape 1
 
-#load("data/201609-citibike-tripdata-dist.Rda")
-load("data/201610-citibike-tripdata-dist.Rda")
+load("data/201609-citibike-tripdata-dist.Rda")
+#load("data/201610-citibike-tripdata-dist.Rda")
 
 #nydata <- tbl_df(nydata)
 
 startdata <- nydata %>% 
   rename(station.id = start.station.id, station.name = start.station.name, station.latitude = start.station.latitude, station.longitude = start.station.longitude) %>%
   mutate(Speed = Distance * 3600 / trip.duration) %>%
+  filter(Speed <= 50) %>%
   group_by(station.id, station.name, station.latitude, station.longitude) %>%
   summarise(meanduration_out = mean(trip.duration),
             meanspeed_out = mean(Speed, na.rm = TRUE),
@@ -45,17 +46,13 @@ startdata <- nydata %>%
             h22_out = sum(HourStart ==22),
             h23_out = sum(HourStart ==23)
   )
-glimpse(startdata)
-
-# TODO : check extreme speeds
-hist(startdata$meanspeed_out)
-table(startdata$meanspeed_out > 50)
-startdata$meanspeed_out[startdata$meanspeed_out > 50] <- NA # Controle de cohérencehist(startdata$meanspeed_out)
+#glimpse(startdata)
 hist(startdata$meanspeed_out)
 
 enddata <- nydata %>% 
   rename(station.id = end.station.id, station.name = end.station.name, station.latitude = end.station.latitude, station.longitude = end.station.longitude) %>%
   mutate(Speed = Distance * 3600 / trip.duration) %>%
+  filter(Speed <= 50) %>%
   group_by(station.id, station.name, station.latitude, station.longitude) %>%
   summarise(meanduration_in = mean(trip.duration),
             meanspeed_in = mean(Speed, na.rm = TRUE),
@@ -87,10 +84,7 @@ enddata <- nydata %>%
             h22_in = sum(HourStop ==22),
             h23_in = sum(HourStop ==23)
   )
-glimpse(enddata)
-hist(enddata$meanspeed_in)
-table(enddata$meanspeed_in > 50)
-enddata$meanspeed_in[enddata$meanspeed_in > 50] <- NA # Controle de cohérencehist(enddata$meanspeed_in)
+#glimpse(enddata)
 hist(enddata$meanspeed_in)
 
 # Join everything
@@ -98,6 +92,51 @@ alldata <- full_join(startdata, enddata)
 rm(startdata, enddata)
 alldata$station.name <- as.factor(alldata$station.name)
 
-#save(alldata,file="data/201609-alldata.Rda")
-save(alldata,file="data/201610-alldata.Rda")
-rm(alldata, nydata)
+save(alldata,file="data/201609-alldata.Rda")
+#save(alldata,file="data/201610-alldata.Rda")
+rm(alldata)
+
+
+# Aggregations par heure
+library(data.table)
+
+startdataPerHour <- nydata %>% 
+  rename(station.id = start.station.id, station.name = start.station.name, station.latitude = start.station.latitude, station.longitude = start.station.longitude) %>%
+  mutate(Speed = Distance * 3600 / trip.duration) %>%
+  filter(Speed <= 50) %>%
+  group_by(station.id, station.name, station.latitude, station.longitude, HourStart) %>%
+  summarise(meanduration_out = mean(trip.duration),
+            meanspeed_out = mean(Speed, na.rm = TRUE),
+            trips_out = n(),
+            percent_male_out = 100 * sum(gender == 1) / sum(gender > 0),
+            mean_age_out = mean(2017 - birth.year, na.rm = TRUE)
+  )
+
+startdataPerHourPivot <- dcast(data.table(startdataPerHour),station.id + station.name + station.latitude + station.longitude ~ HourStart, 
+                               value.var=c("meanduration_out","meanspeed_out", "trips_out","percent_male_out", "mean_age_out"))
+
+#colnames(startdataPerHourPivot)
+#summary(startdataPerHourPivot)
+
+enddataPerHour <- nydata %>% 
+  rename(station.id = end.station.id, station.name = end.station.name, station.latitude = end.station.latitude, station.longitude = end.station.longitude) %>%
+  mutate(Speed = Distance * 3600 / trip.duration) %>%
+  filter(Speed <= 50) %>%
+  group_by(station.id, station.name, station.latitude, station.longitude,HourStop) %>%
+  summarise(meanduration_in = mean(trip.duration),
+            meanspeed_in = mean(Speed, na.rm = TRUE),
+            trips_in = n(),
+            percent_male_in = 100 * sum(gender == 1) / sum(gender > 0),
+            mean_age_in = mean(2017 - birth.year, na.rm = TRUE)
+  )
+
+enddataPerHourPivot <- dcast(data.table(enddataPerHour),station.id + station.name + station.latitude + station.longitude ~ HourStop, 
+                             value.var=c("meanduration_in","meanspeed_in", "trips_in","percent_male_in", "mean_age_in"))
+
+# Join everything
+alldataPerHour <- full_join(startdataPerHourPivot, enddataPerHourPivot)
+alldataPerHour$station.name <- as.factor(alldataPerHour$station.name)
+save(alldataPerHour,file="data/201609-alldataPerHour.Rda")
+
+rm(startdataPerHour, enddataPerHour, startdataPerHourPivot, enddataPerHourPivot)
+rm(nydata)
