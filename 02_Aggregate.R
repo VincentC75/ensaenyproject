@@ -18,6 +18,7 @@ startdata <- nydata %>%
   group_by(station.id, station.name, station.latitude, station.longitude) %>%
   summarise(meanduration_out = mean(trip.duration),
             meanspeed_out = mean(Speed, na.rm = TRUE),
+            meandist_out = mean(Distance, na.rm = TRUE),
             trips_out = n(),
             percent_male_out = 100 * sum(gender == 1) / sum(gender > 0),
             mean_age_out = mean(2017 - birth.year, na.rm = TRUE),
@@ -48,6 +49,7 @@ startdata <- nydata %>%
   )
 #glimpse(startdata)
 hist(startdata$meanspeed_out)
+hist(startdata$meandist_out)
 
 enddata <- nydata %>% 
   rename(station.id = end.station.id, station.name = end.station.name, station.latitude = end.station.latitude, station.longitude = end.station.longitude) %>%
@@ -56,6 +58,7 @@ enddata <- nydata %>%
   group_by(station.id, station.name, station.latitude, station.longitude) %>%
   summarise(meanduration_in = mean(trip.duration),
             meanspeed_in = mean(Speed, na.rm = TRUE),
+            meandist_in = mean(Distance, na.rm = TRUE),
             trips_in = n(),
             percent_male_in = 100 * sum(gender == 1) / sum(gender > 0),
             mean_age_in = mean(2017 - birth.year, na.rm = TRUE),
@@ -86,6 +89,7 @@ enddata <- nydata %>%
   )
 #glimpse(enddata)
 hist(enddata$meanspeed_in)
+hist(enddata$meandist_in)
 
 # Join everything
 alldata <- full_join(startdata, enddata)
@@ -136,6 +140,48 @@ enddataPerHourPivot <- dcast(data.table(enddataPerHour),station.id + station.nam
 # Join everything
 alldataPerHour <- full_join(startdataPerHourPivot, enddataPerHourPivot)
 alldataPerHour$station.name <- as.factor(alldataPerHour$station.name)
+
+# Gestion des valeurs manquantes
+which(is.na(alldataPerHour$trips_in_0))
+alldataPerHour$trips_in_0[which(is.na(alldataPerHour$trips_in_0))] <- 0
+which(is.na(alldataPerHour$trips_in_1))
+alldataPerHour$trips_in_1[which(is.na(alldataPerHour$trips_in_1))] <- 0
+which(is.na(alldataPerHour$trips_in_2))
+alldataPerHour$trips_in_2[which(is.na(alldataPerHour$trips_in_2))] <- 0
+which(is.na(alldataPerHour$trips_in_3))
+alldataPerHour$trips_in_3[which(is.na(alldataPerHour$trips_in_3))] <- 0
+which(is.na(alldataPerHour$trips_in_4))
+alldataPerHour$trips_in_4[which(is.na(alldataPerHour$trips_in_4))] <- 0
+which(is.na(alldataPerHour$trips_in_5))
+alldataPerHour$trips_in_5[which(is.na(alldataPerHour$trips_in_5))] <- 0
+which(is.na(alldataPerHour$trips_in_6))
+alldataPerHour$trips_in_6[which(is.na(alldataPerHour$trips_in_6))] <- 0
+which(is.na(alldataPerHour$trips_in_7))
+alldataPerHour$trips_in_7[which(is.na(alldataPerHour$trips_in_7))] <- 0
+which(is.na(alldataPerHour$trips_in_8))
+alldataPerHour$trips_in_8[which(is.na(alldataPerHour$trips_in_8))] <- 0
+which(is.na(alldataPerHour$trips_in_9))
+alldataPerHour$trips_in_9[which(is.na(alldataPerHour$trips_in_9))] <- 0
+which(is.na(alldataPerHour$trips_in_10))
+alldataPerHour$trips_in_10[which(is.na(alldataPerHour$trips_in_10))] <- 0
+which(is.na(alldataPerHour$trips_in_11))
+alldataPerHour$trips_in_11[which(is.na(alldataPerHour$trips_in_11))] <- 0
+which(is.na(alldataPerHour$trips_in_12))
+alldataPerHour$trips_in_12[which(is.na(alldataPerHour$trips_in_12))] <- 0
+which(is.na(alldataPerHour$trips_in_13))
+alldataPerHour$trips_in_13[which(is.na(alldataPerHour$trips_in_13))] <- 0
+which(is.na(alldataPerHour$trips_in_14))
+alldataPerHour$trips_in_14[which(is.na(alldataPerHour$trips_in_14))] <- 0
+
+
+for(i in 0:23){
+  #print(i)
+  print(which(is.na(paste("alldataPerHour$meanspeed_in", i, sep = "_"))))
+  #alldataPerHour$Paste
+  #alldataPerHour[which(alldataPerHour[is.na(paste("meanspeed_in", i, sep = "_"))]), paste("meanspeed_in", i, sep = "_")] <- 0
+}
+
+
 save(alldataPerHour,file="data/201609-alldataPerHour.Rda")
 
 rm(startdataPerHour, enddataPerHour, startdataPerHourPivot, enddataPerHourPivot)

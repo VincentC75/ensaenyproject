@@ -14,7 +14,7 @@ dataj <- left_join(alldatacluster, alldata)
 table(dataj$clust)
 rm(alldata, alldatacluster)
 
-mycolors <- c("red", "blue", "green", "magenta", "orange")
+mycolors <- c("red", "blue", "green")
 
 # Interface
 ui <- dashboardPage(
@@ -46,7 +46,7 @@ ui <- dashboardPage(
                            collapsible = TRUE,
                            checkboxGroupInput(inputId = "Cluster",
                                               label = "",
-                                              choices = c("Cluster 1" = 1,"Cluster 2" =2 ,"Cluster 3" =3,"Cluster 4" =4,"Cluster 5"=5),
+                                              choices = c("Cluster 1" = 1,"Cluster 2" =2 ,"Cluster 3" =3),
                                               selected = 1:5
                            ))
                 ),
@@ -66,7 +66,12 @@ ui <- dashboardPage(
                          collapsible = TRUE,
                          selectInput(inputId = "Compare",
                                             label = "",
-                                            choices = c("Age moyen des départs" = 1,"Age moyen des arrivées" =2, "Vitesse moyenne des départs" =3, "Vitesse moyenne des arrivées" = 4, "Age moyen" = 5, "Hommes / Femmes (Nb trajets)" = 6, "Hommes / Femmes (%)" = 7),
+                                            choices = c("Age moyen (Boxplot)" = 1,
+                                                        "Age moyen (Barplot)" =2,
+                                                        "Hommes / Femmes (Nb trajets)" = 3,
+                                                        "Hommes / Femmes (%)" = 4,
+                                                        "Vitesse moyenne" = 5,
+                                                        "Distance moyenne" = 6),
                                             selected = 1
                                     ))
                 )
@@ -83,19 +88,17 @@ server <- function(input, output) {
 
   output$amchart <- renderAmCharts({
     if (input$Compare == 1) {
-      amBoxplot(mean_age_out ~ clust, data= dataj, col = mycolors, main = "Age moyen pour les départs")
+      amBoxplot(  ((trips_out * mean_age_out + trips_in * mean_age_in)/(trips_out+trips_in)) ~ clust, data= dataj, col = mycolors, main = "Age moyen")
     } else if (input$Compare == 2) {
-      amBoxplot(mean_age_in ~ clust, data= dataj, col = mycolors, main = "Age moyen pour les arrivées")
-    } else if (input$Compare == 3) {
-      amBoxplot(meanspeed_out ~ clust, data= dataj, col = mycolors, main = "Vitesse moyenne pour les départs")
-    } else if (input$Compare == 4) {
-      amBoxplot(meanspeed_in ~ clust, data= dataj, col = mycolors, main = "Vitesse moyen pour les arrivées")
-    } else if (input$Compare == 5) {
       amBarplot(x = "clust", y = "mean_age", data = statcluster, labelRotation = -45, main = "Age Moyen", show_values = TRUE) 
-    } else if (input$Compare == 6) {
+    } else if (input$Compare == 3) {
       amBarplot(x = "clust", y = c("trips_men", "trips_women"), data = statcluster, stack_type = "regular", groups_color = c("#87cefa", "pink"))    
-    } else if (input$Compare == 7) {
+    } else if (input$Compare == 4) {
       amBarplot(x = "clust", y = c("percent_men", "percent_women"), data = statcluster, stack_type = "regular", groups_color = c("#87cefa", "pink"))    
+    } else if (input$Compare == 5) {
+      amBoxplot( ((trips_out * meanspeed_out + trips_in * meanspeed_in)/(trips_out+trips_in)) ~ clust, data= dataj, col = mycolors, main = "Vitesse moyenne")
+    } else if (input$Compare == 6) {
+      amBoxplot( ((trips_out * meandist_out + trips_in * meandist_in)/(trips_out+trips_in)) ~ clust, data= dataj, col = mycolors, main = "Distance moyenne")
     }
   })
   
@@ -127,7 +130,13 @@ server <- function(input, output) {
     leafletProxy("carte", data = data_disp) %>%
       clearShapes() %>%
       addCircles(~ station.longitude, ~ station.latitude,
-                 popup = ~ sprintf("<b> Mean Speed: %s</b>",as.character(meanspeed_in)),
+                 popup = ~ sprintf("<b>%s</b><br>Mean Speed: %s km/h<br>Mean Duration: %sm %ss<br>Mean Distance: %s km",
+                                   station.name,
+                                   as.character(round(((trips_in*meanspeed_in+trips_out*meanspeed_out)/(trips_in+trips_out)),2)),
+                                   as.character(round(((trips_in*meanduration_in+trips_out*meanduration_out)/(trips_in+trips_out))/60,0)),
+                                   as.character(round(((trips_in*meanduration_in+trips_out*meanduration_out)/(trips_in+trips_out))%%60,0)),
+                                   as.character(round(((trips_in*meandist_in+trips_out*meandist_out)/(trips_in+trips_out)),2))
+                 ),
                  radius = ~ 0.5*sqrt(trips_out),
                  color = ~ ColorPal(clust),
                  stroke = TRUE #,fillOpacity = 0.75
