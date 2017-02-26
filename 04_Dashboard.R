@@ -31,13 +31,13 @@ ui <- dashboardPage(
       tabItem(tabName = "dashboard",
               fluidRow(
                 column(width = 2, 
-#                       box(
-#                           title = "Zoom",
-#                           status = "primary",
-#                           width = 12,
-#                           solidHeader = TRUE,
-#                           collapsible = TRUE,
-#                           sliderInput("zoom", "", min = 1, max = 18, value = 12)),
+                       box(
+                           title = "Select Top",
+                           status = "primary",
+                           width = 12,
+                           solidHeader = TRUE,
+                           collapsible = TRUE,
+                           sliderInput("top", "", ticks = FALSE, min = 1, max = nrow(dataj), value = nrow(dataj))),
                        box(
                            title = "Cluster",
                            status = "primary",
@@ -121,7 +121,12 @@ server <- function(input, output) {
   observe({
 #    print(input$Cluster)
     if (!is.null(input$Cluster)) {
-    data_disp <- dataj[dataj$clust %in% input$Cluster,]
+    #data_disp <- dataj[dataj$clust %in% input$Cluster,]
+    data_disp <- dataj %>%
+      filter(clust %in% input$Cluster) %>%
+      mutate(trips_total = trips_in+trips_out) %>%
+      arrange(desc(trips_total)) %>%
+      filter(row_number() <= input$top)
 
     mlat  <- mean(dataj$station.latitude)
     mlong <- mean(dataj$station.longitude)
