@@ -4,6 +4,7 @@ library(shinydashboard)
 library(leaflet)
 library(dplyr)
 library(rAmCharts)
+require(pipeR)
 
 # Chargement des donnees
 setwd("C:/Users/Vincent/Dropbox/LECEPE/nyproject/ensaenyproject")

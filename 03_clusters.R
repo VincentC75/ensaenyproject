@@ -6,9 +6,11 @@ head (alldata)
 summary(alldata)
 
 
-data <- na.omit(alldata)
+#data <- na.omit(alldata)
 ids <- as.data.frame(data$station.id)
-data <- na.omit(alldata)[,5:64]
+#data <- na.omit(alldata)[,5:64]
+data <- na.omit(alldata)[,c(5:7, 9:37, 39:64)]
+
 # Suppression des colonnes relatives à la station
 #data <- na.omit(alldata)[,-c(1,2,3,4,5,7,34,36)]
 
@@ -28,7 +30,7 @@ data2$station.id <- unlist(ids)
 alldatacluster <- myclusters$data.clust
 alldatacluster$station.id <- unlist(ids)
 rm(alldata, data, ids, myclusters, myPCA)
-save(alldatacluster,file="data/201609-alldatacluster.Rda")
+save(alldatacluster,file="data/201609-alldatacluster2.Rda")
 #load(file="data/201609-alldatacluster.Rda")
 
 
