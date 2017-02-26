@@ -130,14 +130,19 @@ server <- function(input, output) {
     leafletProxy("carte", data = data_disp) %>%
       clearShapes() %>%
       addCircles(~ station.longitude, ~ station.latitude,
-                 popup = ~ sprintf("<b>%s</b><br>Mean Speed: %s km/h<br>Mean Duration: %sm %ss<br>Mean Distance: %s km",
+                 popup = ~ sprintf("<b>%s</b><br>Mean Speed: %s km/h<br>Mean Duration: %sm %ss<br>Mean Distance: %s km<br>%s%% men, %s%% women<br>%s trips (%s in, %s out)",
                                    station.name,
                                    as.character(round(((trips_in*meanspeed_in+trips_out*meanspeed_out)/(trips_in+trips_out)),2)),
                                    as.character(round(((trips_in*meanduration_in+trips_out*meanduration_out)/(trips_in+trips_out))/60,0)),
                                    as.character(round(((trips_in*meanduration_in+trips_out*meanduration_out)/(trips_in+trips_out))%%60,0)),
-                                   as.character(round(((trips_in*meandist_in+trips_out*meandist_out)/(trips_in+trips_out)),2))
+                                   as.character(round(((trips_in*meandist_in+trips_out*meandist_out)/(trips_in+trips_out)),2)),
+                                   as.character(round((trips_in*percent_male_in+trips_out*percent_male_out)/(trips_in+trips_out),2)),
+                                   as.character(round(100 - (trips_in*percent_male_in+trips_out*percent_male_out)/(trips_in+trips_out),2)),
+                                   as.character(trips_in+trips_out),
+                                   as.character(trips_in),
+                                   as.character(trips_out)
                  ),
-                 radius = ~ 0.5*sqrt(trips_out),
+                 radius = ~ 0.8*sqrt(trips_out + trips_in),
                  color = ~ ColorPal(clust),
                  stroke = TRUE #,fillOpacity = 0.75
                  )  %>%
