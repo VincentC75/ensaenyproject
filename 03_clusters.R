@@ -45,7 +45,6 @@ library(rAmCharts)
 mycolors <- c("red", "blue", "green", "magenta", "orange")
 amBoxplot(mean_age_out ~ clust, data= alldatacluster, col = mycolors, main = "Age moyen pour les départs")
 amBoxplot(mean_age_in ~ clust, data= alldatacluster, col = mycolors, main = "Age moyen pour les arrivées")
-amBoxplot(mean_age_in ~ clust, data= alldatacluster, col = mycolors, main = "Age moyen pour les arrivées")
 
 
 # aggregation par cluster
@@ -85,6 +84,54 @@ statcluster <- nydata %>%
                          h21_out = sum(HourStart ==21),
                          h22_out = sum(HourStart ==22),
                          h23_out = sum(HourStart ==23),
+                         h0_in = sum(HourStop ==0),
+                         h1_in = sum(HourStop ==1),
+                         h2_in = sum(HourStop ==2),
+                         h3_in = sum(HourStop ==3),
+                         h4_in = sum(HourStop ==4),
+                         h5_in = sum(HourStop ==5),
+                         h6_in = sum(HourStop ==6),
+                         h7_in = sum(HourStop ==7),
+                         h8_in = sum(HourStop ==8),
+                         h9_in = sum(HourStop ==9),
+                         h10_in = sum(HourStop ==10),
+                         h11_in = sum(HourStop ==11),
+                         h12_in = sum(HourStop ==12),
+                         h13_in = sum(HourStop ==13),
+                         h14_in = sum(HourStop ==14),
+                         h15_in = sum(HourStop ==15),
+                         h16_in = sum(HourStop ==16),
+                         h17_in = sum(HourStop ==17),
+                         h18_in = sum(HourStop ==18),
+                         h19_in = sum(HourStop ==19),
+                         h20_in = sum(HourStop ==20),
+                         h21_in = sum(HourStop ==21),
+                         h22_in = sum(HourStop ==22),
+                         h23_in = sum(HourStop ==23),
+                         h0_all = h0_in + h0_out,
+                         h1_all = h1_in + h1_out,
+                         h2_all = h2_in + h2_out,
+                         h3_all = h3_in + h3_out,
+                         h4_all = h4_in + h4_out,
+                         h5_all = h5_in + h5_out,
+                         h6_all = h6_in + h6_out,
+                         h7_all = h7_in + h6_out,
+                         h8_all = h8_in + h8_out,
+                         h9_all = h9_in + h9_out,
+                         h10_all = h10_in + h10_out,
+                         h11_all = h11_in + h11_out,
+                         h12_all = h12_in + h12_out,
+                         h13_all = h13_in + h13_out,
+                         h14_all = h14_in + h14_out,
+                         h15_all = h15_in + h15_out,
+                         h16_all = h16_in + h16_out,
+                         h17_all = h17_in + h17_out,
+                         h18_all = h18_in + h18_out,
+                         h19_all = h19_in + h19_out,
+                         h20_all = h20_in + h20_out,
+                         h21_all = h21_in + h21_out,
+                         h22_all = h22_in + h22_out,
+                         h23_all = h23_in + h23_out,
                          trips_men = sum(gender == 1),
                          trips_women = sum(gender == 2),
                          percent_men = round(100 * trips_men / (trips_men + trips_women), digits = 2),
@@ -97,6 +144,28 @@ mycolors <- c("red", "blue", "green")
 statcluster$color <- mycolors
 
 save(statcluster,file="data/201609-statcluster.Rda")
+
+# Arrivées par heure
+matplot(t(statcluster[, 5:29]), type = "l", col = c("red", "blue", "green"),main="Départs  selon l'heure", ylab="trips")
+legend("topright", col = c("red", "blue", "green"), 
+       lty= 1, legend = paste("Cluster", 1:3))
+
+
+tmp <- as.data.frame(t(statcluster[, 5:28]))
+amPlot(x = tmp$V1, type = 'sl', col="red", ylab="trips", xlab = "Hour") %>>% amLines(x = tmp$V2, type = 'sl', col = "blue")  %>>% amLines(x = tmp$V3, type = 'sl', col = "green")
+
+# Départs par heure
+matplot(t(statcluster[, 30:52]), type = "l", col = c("red", "blue", "green"),main="Arrivées selon l'heure", ylab="trips")
+legend("topright", col = c("red", "blue", "green"), 
+       lty= 1, legend = paste("Cluster", 1:3))
+
+
+# Mouvements (départs et arrivées) par heure
+matplot(t(statcluster[, 53:76]), type = "l", col = c("red", "blue", "green"),main="Mouvements (départs + arrivées) selon l'heure", ylab="trips")
+legend("topright", col = c("red", "blue", "green"), 
+       lty= 1, legend = paste("Cluster", 1:3))
+
+
 
 amBarplot(x = "clust", y = "mean_age", data = statcluster, labelRotation = -45)
 

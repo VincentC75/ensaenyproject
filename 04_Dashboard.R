@@ -71,7 +71,10 @@ ui <- dashboardPage(
                                                         "Hommes / Femmes (Nb trajets)" = 3,
                                                         "Hommes / Femmes (%)" = 4,
                                                         "Vitesse moyenne" = 5,
-                                                        "Distance moyenne" = 6),
+                                                        "Distance moyenne" = 6,
+                                                        "Départs par heure" = 7,
+                                                        "Arrivées par heure" = 8,
+                                                        "Mouvements par heure" = 9),
                                             selected = 1
                                     ))
                 )
@@ -99,6 +102,15 @@ server <- function(input, output) {
       amBoxplot( ((trips_out * meanspeed_out + trips_in * meanspeed_in)/(trips_out+trips_in)) ~ clust, data= dataj, col = mycolors, main = "Vitesse moyenne")
     } else if (input$Compare == 6) {
       amBoxplot( ((trips_out * meandist_out + trips_in * meandist_in)/(trips_out+trips_in)) ~ clust, data= dataj, col = mycolors, main = "Distance moyenne")
+    } else if (input$Compare == 7) {
+      tmp <- as.data.frame(t(statcluster[, 5:28]))
+      amPlot(x = tmp$V1, type = 'sl', col="red", ylab="trips", xlab = "Hour", main="Départs en fonction de l'heure") %>>% amLines(x = tmp$V2, type = 'sl', col = "blue")  %>>% amLines(x = tmp$V3, type = 'sl', col = "green")
+    } else if (input$Compare == 8) {
+      tmp <- as.data.frame(t(statcluster[, 29:52]))
+      amPlot(x = tmp$V1, type = 'sl', col="red", ylab="trips", xlab = "Hour", main="Arrivées en fonction de l'heure") %>>% amLines(x = tmp$V2, type = 'sl', col = "blue")  %>>% amLines(x = tmp$V3, type = 'sl', col = "green")
+    } else if (input$Compare == 9) {
+      tmp <- as.data.frame(t(statcluster[, 53:76]))
+      amPlot(x = tmp$V1, type = 'sl', col="red", ylab="trips", xlab = "Hour", main="Trajets en fonction de l'heure") %>>% amLines(x = tmp$V2, type = 'sl', col = "blue")  %>>% amLines(x = tmp$V3, type = 'sl', col = "green")
     }
   })
   
